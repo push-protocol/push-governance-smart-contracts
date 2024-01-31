@@ -20,7 +20,7 @@ contract PushBravoProxy is TransparentUpgradeableProxy {
             _logic,
             _admin,
             abi.encodeWithSignature(
-                "initialize(address,address,address,uint,uint,uint)",
+                "initialize(address,address,address,uint256,uint256,uint256)",
                 _admin,
                 _timelock,
                 _push,
