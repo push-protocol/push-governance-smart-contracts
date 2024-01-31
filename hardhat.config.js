@@ -1,5 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
-
+require("dotenv").config();
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
@@ -26,15 +26,11 @@ module.exports = {
     // ETH Network
     sepolia: {
       url: `https://sepolia.infura.io/v3/${process.env.INFURA_PROJECT_ID}`,
-      accounts: {
-        mnemonic: mnemonic(),
-      },
+      accounts: [process.env.PRIVATE]
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`, // <---- YOUR INFURA ID! (or it won't work)
-      aaccounts: {
-        mnemonic: mnemonic(),
-      },
+      aaccounts: [process.env.PRIVATE]
     },
   },
 };
