@@ -33,7 +33,7 @@ async function main() {
   await timelock.waitForDeployment();
 
   console.log("timelock deployed to:", timelock.target);
-  console.log("verifying timrlock");
+  console.log("verifying timelock");
   await timelock.deploymentTransaction().wait(6);
 
   try {
@@ -46,7 +46,7 @@ async function main() {
   }
 
   console.log("deploying proxy");
-  const proxy = await logic.waitForDeployment("PushBravoProxy", [
+  const proxy = await ethers.deployContract("PushBravoProxy", [
     logic.target,
     _admin,
     timelock.target,
@@ -55,7 +55,6 @@ async function main() {
     _votingDelay,
     _proposalThreshold,
   ]);
-
   await proxy.waitForDeployment();
 
   console.log("proxy deployed to:", proxy.target);
@@ -74,6 +73,7 @@ async function main() {
         _votingDelay,
         _proposalThreshold,
       ],
+      contract:"contracts/PushBravoProxy.sol:PushBravoProxy"
     });
   } catch (error) {
     console.log("Verification failed :", error);
