@@ -4,4 +4,6 @@ out = "out"
 libs = ['node_modules',"lib"]
 solc = "0.6.11"
 
+# file reading permissions
+fs_permissions = [{ access = "read", path = "./addresses/addresses.json"}]
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
