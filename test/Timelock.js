@@ -1,7 +1,6 @@
 const { loadFixture, time } = require("@nomicfoundation/hardhat-network-helpers");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-// const { Timelock } = require("../typechain-types");
 const { AddressLike } = require("ethers");
 
 describe("Timelock", function () {
