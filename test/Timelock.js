@@ -32,13 +32,14 @@ describe("Timelock", function () {
     it("Delay must be in bounds", async function () {
       const [owner] = await ethers.getSigners();
       const Timelock = await ethers.getContractFactory("Timelock");
-      await expect(Timelock.deploy(owner, 0)).to.be.revertedWith(
-        "Timelock::constructor: Delay must exceed minimum delay."
-      );
+      // Minimum Delay is 0 days in our case
+      // await expect(Timelock.deploy(owner, 0)).to.be.revertedWith(
+      //   "Timelock::constructor: Delay must exceed minimum delay."
+      // );
       await expect(
         Timelock.deploy(owner, 30 * 24 * 60 * 60 + 1)
       ).to.be.revertedWith(
-        "Timelock::setDelay: Delay must not exceed maximum delay."
+        "Timelock::constructor: Delay must not exceed maximum delay."
       );
     });
   });
@@ -69,14 +70,14 @@ describe("Timelock", function () {
     it("Must be within bounds", async function () {
       const { timelock } = await loadFixture(deployFixtures);
       let calldata = (await timelock.setDelay.populateTransaction(1)).data;
-
-      await expect(
-        timelock.executeTransaction(
-          ...(await queueAndExecute(timelock, timelock, 0n, calldata))
-        )
-      ).to.be.revertedWith(
-        "Timelock::executeTransaction: Transaction execution reverted."
-      );
+// Min delay is 0 in our case
+      // await expect(
+      //   timelock.executeTransaction(
+      //     ...(await queueAndExecute(timelock, timelock, 0n, calldata))
+      //   )
+      // ).to.be.revertedWith(
+      //   "Timelock::executeTransaction: Transaction execution reverted."
+      // );
 
       calldata = (
         await timelock.setDelay.populateTransaction(30 * 24 * 60 * 60 + 1)

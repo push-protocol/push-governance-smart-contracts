@@ -453,4 +453,8 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         }
         return chainId;
     }
+    function accept() external {
+        require(msg.sender == admin, "GovernorBravo::_setProposalThreshold: admin only");
+        timelock.acceptAdmin();
+    }
 }

@@ -12,24 +12,17 @@ const propose = async function propose(
   callDatas = ["0x"],
   description = "Test Proposal"
 ) {
-  console.log("PRopose function called");
   const [owner, owner1] = await ethers.getSigners();
-  const tx = await governor
-    .propose(
-      targets,
-      values,
-      Array(values.length).fill(""),
-      callDatas,
-      description
-    );
-  console.log("PRopose function finsihed");
-
-
+  const tx = await governor.propose(
+    targets,
+    values,
+    Array(values.length).fill(""),
+    callDatas,
+    description
+  );
   await mine((await governor.votingDelay()) + 1n);
-  console.log("Mining done");
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  console.log((await tx.wait()).logs[0].args[0]);
   return (await tx.wait()).logs[0].args[0];
 };
 
@@ -150,7 +143,7 @@ const proposeAndExecute = async function proposeAndExecute(
 // };
 
 const setupGovernorBravo = async function setupGovernorBravo() {
-  const [owner, owner1] = await ethers.getSigners();
+  const [owner, owner1,owner2] = await ethers.getSigners();
   const GovernorBravoDelegator = await ethers.getContractFactory(
     "PushBravoProxy"
   );
@@ -162,8 +155,8 @@ const setupGovernorBravo = async function setupGovernorBravo() {
   const Comp = await ethers.getContractFactory("EPNS");
 
   const timelock = await Timelock.deploy(owner, 172800);
-  const comp = await Comp.deploy(owner1);
-  await comp.delegate(owner1);
+  const comp = await Comp.deploy(owner);
+  await comp.delegate(owner);
 
   // blocknum = await ethers.provider.getBlock();
   // await comp.transfer(owner1.address, ethers.parseEther("1000000"));
@@ -171,10 +164,9 @@ const setupGovernorBravo = async function setupGovernorBravo() {
   // console.log(await comp.balanceOf(owner1));
   // console.log(await comp.getPriorVotes(owner1, blocknum.number - 1));
   // console.log(await comp.getPriorVotes(owner, blocknum.number - 1));
-  const eta =
-    BigInt(await time.latest()) + 100n + (await timelock.MINIMUM_DELAY());
-  const governorBravoDelegate = await GovernorBravoDelegate.deploy();
 
+  // BigInt(await time.latest()) + 6000n +172800n;
+  const governorBravoDelegate = await GovernorBravoDelegate.deploy();
   let governorBravo = await GovernorBravoDelegator.deploy(
     governorBravoDelegate.target,
     owner,
@@ -184,13 +176,15 @@ const setupGovernorBravo = async function setupGovernorBravo() {
     100,
     500000n * 10n ** 18n
   );
-  await governorBravo.connect(owner).changeAdmin(owner1.address);
+  await governorBravo.connect(owner).changeAdmin(owner2.address);
 
   governorBravo = GovernorBravoDelegate.attach(
     await governorBravo.getAddress()
   );
+// console.log(governorBravo.target);
+  const eta =
+    BigInt(await time.latest()) + 6000n + 172800n;
 
-  console.log("Changing admin");
   const tx = await timelock.setPendingAdmin.populateTransaction(governorBravo);
   const txData = tx.data;
 
@@ -201,15 +195,33 @@ const setupGovernorBravo = async function setupGovernorBravo() {
     [txData],
     "Transfer admin for bravo"
   );
-  console.log("Proposed");
-
   await governorBravo.castVote(1, 1);
 
   await mine(await governorBravo.votingPeriod());
-  await governorBravo.queue(1);
-  await time.increase(await timelock.MINIMUM_DELAY());
-  await governorBravo.execute(1);
+  await timelock.queueTransaction(timelock, 0, "", txData, eta);
+  await time.increase(172800n + 300n);
+  await timelock.executeTransaction(timelock, 0, "", txData, eta);
 
+  await governorBravo.accept();
+//   const eta1 =
+//   BigInt(await time.latest()) + 6000n + 172800n;
+
+// const tx1 = await timelock.acceptAdmin.populateTransaction();
+// const txData1 = tx1.data;
+// console.log(tx1.data);
+// await propose(
+//   governorBravo,
+//   [timelock],
+//   [0n],
+//   [txData1],
+//   "Transfer admin for bravo"
+// );
+// await governorBravo.castVote(2, 1);
+
+// await mine(await governorBravo.votingPeriod());
+// await timelock.queueTransaction(timelock, 0, "", txData1, eta1);
+// await time.increase(172800n + 300n);
+// await timelock.executeTransaction(timelock, 0, "", txData1, eta1);
   return { governorBravo, timelock, comp };
 };
 
