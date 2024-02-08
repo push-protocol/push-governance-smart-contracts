@@ -417,22 +417,6 @@ describe("Governor Bravo", function () {
       ).to.be.revertedWith("GovernorBravo::cancel: proposer above threshold");
     });
 
-    // it("Error: cancel executed proposal", async function () {
-    //   const { governorBravo, owner } = await loadFixture(deployFixtures);
-    //   const tx = { to: await governorBravo.timelock(), value: 1000 };
-    //   await owner.sendTransaction(tx);
-    //   const proposalId = await proposeAndExecute(
-    //     governorBravo,
-    //     [owner],
-    //     [1],
-    //     ["0x"],
-    //     "Will be executed"
-    //   );
-
-    //   await expect(governorBravo.cancel(proposalId)).to.be.revertedWith(
-    //     "GovernorBravo::cancel: cannot cancel executed proposal"
-    //   );
-    // });
   });
 
   describe("Vote", function () {
