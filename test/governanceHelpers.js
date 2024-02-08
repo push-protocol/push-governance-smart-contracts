@@ -109,39 +109,6 @@ const proposeAndExecute = async function proposeAndExecute(
   return proposalId;
 };
 
-// const setupGovernorAlpha = async function setupGovernorAlpha() {
-//   const [owner] = await ethers.getSigners();
-
-//   const Timelock = await ethers.getContractFactory("Timelock");
-//   const Comp = await ethers.getContractFactory("Comp");
-//   const GovernorAlpha = await ethers.getContractFactory("GovernorAlpha");
-
-//   const timelock = await Timelock.deploy(owner, 172800);
-//   const comp = await Comp.deploy(owner);
-//   const governorAlpha = await GovernorAlpha.deploy(timelock, comp, owner);
-
-//   const eta =
-//     BigInt(await time.latest()) + 100n + (await timelock.MINIMUM_DELAY());
-//   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-//   const txData = await timelock.setPendingAdmin.populateTransaction(
-//     governorAlpha
-//   ).data;
-//   await timelock.queueTransaction(timelock, 0, "", txData, eta);
-//   await time.increaseTo(eta);
-//   await timelock.executeTransaction(timelock, 0, "", txData, eta);
-//   await governorAlpha.__acceptAdmin();
-
-//   return { governorAlpha, timelock, comp };
-// };
-
-// const setupGovernorAlpha = async function setupGovernorAlpha() {
-
-//
-//   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-
-//   return { timelock, comp };
-// };
-
 const setupGovernorBravo = async function setupGovernorBravo() {
   const [owner, owner1,owner2] = await ethers.getSigners();
   const GovernorBravoDelegator = await ethers.getContractFactory(
@@ -158,14 +125,6 @@ const setupGovernorBravo = async function setupGovernorBravo() {
   const comp = await Comp.deploy(owner);
   await comp.delegate(owner);
 
-  // blocknum = await ethers.provider.getBlock();
-  // await comp.transfer(owner1.address, ethers.parseEther("1000000"));
-  // console.log(await comp.balanceOf(owner));
-  // console.log(await comp.balanceOf(owner1));
-  // console.log(await comp.getPriorVotes(owner1, blocknum.number - 1));
-  // console.log(await comp.getPriorVotes(owner, blocknum.number - 1));
-
-  // BigInt(await time.latest()) + 6000n +172800n;
   const governorBravoDelegate = await GovernorBravoDelegate.deploy();
   let governorBravo = await GovernorBravoDelegator.deploy(
     governorBravoDelegate.target,
@@ -196,32 +155,12 @@ const setupGovernorBravo = async function setupGovernorBravo() {
     "Transfer admin for bravo"
   );
   await governorBravo.castVote(1, 1);
-
   await mine(await governorBravo.votingPeriod());
   await timelock.queueTransaction(timelock, 0, "", txData, eta);
   await time.increase(172800n + 300n);
   await timelock.executeTransaction(timelock, 0, "", txData, eta);
 
   await governorBravo.accept();
-//   const eta1 =
-//   BigInt(await time.latest()) + 6000n + 172800n;
-
-// const tx1 = await timelock.acceptAdmin.populateTransaction();
-// const txData1 = tx1.data;
-// console.log(tx1.data);
-// await propose(
-//   governorBravo,
-//   [timelock],
-//   [0n],
-//   [txData1],
-//   "Transfer admin for bravo"
-// );
-// await governorBravo.castVote(2, 1);
-
-// await mine(await governorBravo.votingPeriod());
-// await timelock.queueTransaction(timelock, 0, "", txData1, eta1);
-// await time.increase(172800n + 300n);
-// await timelock.executeTransaction(timelock, 0, "", txData1, eta1);
   return { governorBravo, timelock, comp };
 };
 

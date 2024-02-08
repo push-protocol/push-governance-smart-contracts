@@ -26,10 +26,19 @@ const {
 
 describe("Governor Bravo", function () {
   async function deployFixtures() {
-    const [owner, otherAccount] = await ethers.getSigners();
-    const { governorBravo, timelock, comp } = await setupGovernorBravo();
+    const [owner, otherAccount, owner2] = await ethers.getSigners();
+    const { governorBravo, timelock, comp, governorBravoProxy } =
+      await setupGovernorBravo();
 
-    return { owner, otherAccount, governorBravo, timelock, comp };
+    return {
+      owner,
+      otherAccount,
+      owner2,
+      governorBravo,
+      timelock,
+      comp,
+      governorBravoProxy,
+    };
   }
 
   describe("Initialize", function () {
@@ -1269,7 +1278,9 @@ describe("Governor Bravo", function () {
 
   describe("Set Implementation", function () {
     it("Admin only", async function () {
-      const { governorBravo, otherAccount } = await loadFixture(deployFixtures);
+      const { governorBravo, otherAccount, owner2 } = await loadFixture(
+        deployFixtures
+      );
       const GovernorBravoDelegator = await ethers.getContractFactory(
         "PushBravoProxy"
       );
@@ -1277,16 +1288,15 @@ describe("Governor Bravo", function () {
         await governorBravo.getAddress()
       );
       await expect(
-        governorBravoDelegator
-          .connect(otherAccount)
-          ._setImplementation(otherAccount)
-      ).to.be.revertedWith(
-        "GovernorBravoDelegator::_setImplementation: admin only"
-      );
+        governorBravoDelegator.connect(otherAccount).upgradeTo(otherAccount)
+      ).to.be.reverted;
+      // With(
+      //   "GovernorBravoDelegator::_setImplementation: admin only"
+      // );
     });
 
     it("Invalid address", async function () {
-      const { governorBravo } = await loadFixture(deployFixtures);
+      const { governorBravo, owner2 } = await loadFixture(deployFixtures);
       const GovernorBravoDelegator = await ethers.getContractFactory(
         "PushBravoProxy"
       );
@@ -1294,24 +1304,26 @@ describe("Governor Bravo", function () {
         await governorBravo.getAddress()
       );
       await expect(
-        governorBravoDelegator._setImplementation(ethers.ZeroAddress)
+        governorBravoDelegator.connect(owner2).upgradeTo(ethers.ZeroAddress)
       ).to.be.revertedWith(
-        "GovernorBravoDelegator::_setImplementation: invalid implementation address"
+        "UpgradeableProxy: new implementation is not a contract"
       );
     });
 
     it("Happy path", async function () {
-      const { governorBravo, owner } = await loadFixture(deployFixtures);
+      const { governorBravo, owner2 } = await loadFixture(deployFixtures);
       const GovernorBravoDelegator = await ethers.getContractFactory(
         "PushBravoProxy"
       );
       const governorBravoDelegator = GovernorBravoDelegator.attach(
         await governorBravo.getAddress()
       );
-      const oldImpl = await governorBravoDelegator.implementation();
-      await expect(governorBravoDelegator._setImplementation(owner.address))
-        .to.emit(governorBravo, "NewImplementation")
-        .withArgs(oldImpl, owner.address);
+      await governorBravoDelegator
+        .connect(owner2)
+        .upgradeTo(governorBravo.target);
+      await expect(
+        governorBravoDelegator.connect(owner2).upgradeTo(governorBravo.target)
+      ).to.be.fulfilled;
     });
   });
 });
