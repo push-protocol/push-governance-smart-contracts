@@ -16,7 +16,7 @@ async function main() {
   await logic.waitForDeployment();
   console.log("logic deployed on", logic.target);
   console.log("verifying logic");
-  await logic.deploymentTransaction().wait(6);
+  await logic.deploymentTransaction().wait(4);
 
   try {
     await hre.run("verify:verify", {
@@ -34,7 +34,7 @@ async function main() {
 
   console.log("timelock deployed to:", timelock.target);
   console.log("verifying timelock");
-  await timelock.deploymentTransaction().wait(6);
+  await timelock.deploymentTransaction().wait(4);
 
   try {
     await hre.run("verify:verify", {
@@ -45,13 +45,29 @@ async function main() {
     console.log("Verification failed :", error);
   }
 
-  console.log("deploying proxy");
+  console.log("deploying proxy Admin");
 
   const proxyAdmin = await ethers.deployContract("PushBravoAdmin");
+  console.log("proxyAdmin deployed to:", proxyAdmin.target);
+
+  console.log("verifying proxy Admin");
+  await proxyAdmin.deploymentTransaction().wait(4);
+  try {
+    await hre.run("verify:verify", {
+      address: proxyAdmin.target,
+      constructorArguments: [],
+      contract:"contracts/PushBravoAdmin.sol:PushBravoAdmin"
+    });
+  } catch (error) {
+    console.log("Verification failed :", error);
+  }
+
+
+  console.log("deploying proxy");
 
   const proxy = await ethers.deployContract("PushBravoProxy", [
     logic.target,
-    proxyAdmin.address,
+    proxyAdmin.target,
     _admin,
     timelock.target,
     _push,
@@ -64,12 +80,13 @@ async function main() {
   console.log("proxy deployed to:", proxy.target);
 
   console.log("verifying proxy");
-  await proxy.deploymentTransaction().wait(6);
+  await proxy.deploymentTransaction().wait(4);
   try {
     await hre.run("verify:verify", {
       address: proxy.target,
       constructorArguments: [
         logic.target,
+        proxyAdmin.target,
         _admin,
         timelock.target,
         _push,
