@@ -160,7 +160,7 @@ const setupGovernorBravo = async function setupGovernorBravo() {
   await time.increase(172800n + 300n);
   await timelock.executeTransaction(timelock, 0, "", txData, eta);
 
-  await governorBravo.accept();
+  await governorBravo.acceptTimelockOwnership();
   return { governorBravo, timelock, pushToken };
 };
 
