@@ -46,8 +46,12 @@ async function main() {
   }
 
   console.log("deploying proxy");
+
+  const proxyAdmin = await ethers.deployContract("PushBravoAdmin");
+
   const proxy = await ethers.deployContract("PushBravoProxy", [
     logic.target,
+    proxyAdmin.address,
     _admin,
     timelock.target,
     _push,
