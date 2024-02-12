@@ -5,10 +5,10 @@ import "./GovernorBravoInterfaces.sol";
 
 contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoEvents {
     /// @notice The name of this contract
-    string public constant name = "EPNS Governor Bravo";
+    string public constant name = "Push Governor Bravo";
 
     /// @notice The minimum setable proposal threshold
-    uint256 public constant MIN_PROPOSAL_THRESHOLD = 500000e18; // 500,000 = 0.5% of EPNS
+    uint256 public constant MIN_PROPOSAL_THRESHOLD = 500000e18; // 500,000 = 0.5% of PUSH
 
     /// @notice The maximum setable proposal threshold
     uint256 public constant MAX_PROPOSAL_THRESHOLD = 1000000e18; // 1,000,000 PUSH
@@ -26,7 +26,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
     uint256 public constant MAX_VOTING_DELAY = 40320; // About 1 week
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-    uint256 public constant quorumVotes = 40000000e18; // 40,000,000 = 4% of EPNS
+    uint256 public constant quorumVotes = 40000000e18; // 40,000,000 = 4% of PUSH
 
     /// @notice The maximum number of actions that can be included in a proposal
     uint256 public constant proposalMaxOperations = 10; // 10 actions
@@ -74,7 +74,7 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
 
         admin = admin_;
         timelock = TimelockInterface(timelock_);
-        PUSH = EPNSInterface(push_);
+        PUSH = IPUSHToken(push_);
         votingPeriod = votingPeriod_;
         votingDelay = votingDelay_;
         proposalThreshold = proposalThreshold_;

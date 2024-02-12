@@ -75,11 +75,11 @@ contract GovernorBravoDelegateStorageV1 is GovernorBravoDelegatorStorage {
     /// @notice The total number of proposals
     uint256 public proposalCount;
 
-    /// @notice The address of the EPNS Protocol Timelock
+    /// @notice The address of the Push Protocol Timelock
     TimelockInterface public timelock;
 
-    /// @notice The address of the EPNS governance token
-    EPNSInterface public PUSH;
+    /// @notice The address of the Push governance token
+    IPUSHToken public PUSH;
 
     /// @notice The official record of all proposals ever proposed
     mapping(uint256 => Proposal) public proposals;
@@ -171,6 +171,6 @@ interface TimelockInterface {
     ) external payable returns (bytes memory);
 }
 
-interface EPNSInterface {
+interface IPUSHToken {
     function getPriorVotes(address account, uint256 blockNumber) external view returns (uint96);
 }
