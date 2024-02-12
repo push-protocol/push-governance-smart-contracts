@@ -8,10 +8,11 @@ const { ethers } = require("hardhat");
 const propose = async function propose(
   governor,
   targets = [ethers.ZeroAddress],
-  values = [0],
+  values = [0n],
   callDatas = ["0x"],
   description = "Test Proposal"
 ) {
+  const [owner, owner1] = await ethers.getSigners();
   const tx = await governor.propose(
     targets,
     values,
@@ -19,7 +20,6 @@ const propose = async function propose(
     callDatas,
     description
   );
-
   await mine((await governor.votingDelay()) + 1n);
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -109,82 +109,64 @@ const proposeAndExecute = async function proposeAndExecute(
   return proposalId;
 };
 
-const setupGovernorAlpha = async function setupGovernorAlpha() {
-  const [owner] = await ethers.getSigners();
-
-  const Timelock = await ethers.getContractFactory("Timelock");
-  const Comp = await ethers.getContractFactory("Comp");
-  const GovernorAlpha = await ethers.getContractFactory("GovernorAlpha");
-
-  const timelock = await Timelock.deploy(owner, 172800);
-  const comp = await Comp.deploy(owner);
-  const governorAlpha = await GovernorAlpha.deploy(timelock, comp, owner);
-
-  const eta =
-    BigInt(await time.latest()) + 100n + (await timelock.MINIMUM_DELAY());
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const txData = await timelock.setPendingAdmin.populateTransaction(
-    governorAlpha
-  ).data;
-  await timelock.queueTransaction(timelock, 0, "", txData, eta);
-  await time.increaseTo(eta);
-  await timelock.executeTransaction(timelock, 0, "", txData, eta);
-  await governorAlpha.__acceptAdmin();
-
-  return { governorAlpha, timelock, comp };
-};
-
-const setupGovernorBravo = async function setupGovernorBravo(
-  timelock,
-  comp,
-  governorAlpha
-) {
-  const [owner] = await ethers.getSigners();
+const setupGovernorBravo = async function setupGovernorBravo() {
+  const [owner, owner1,owner2] = await ethers.getSigners();
   const GovernorBravoDelegator = await ethers.getContractFactory(
-    "GovernorBravoDelegator"
+    "PushBravoProxy"
   );
   const GovernorBravoDelegate = await ethers.getContractFactory(
     "GovernorBravoDelegate"
   );
 
+  const Timelock = await ethers.getContractFactory("Timelock");
+  const PUSH = await ethers.getContractFactory("EPNS");
+
+  const timelock = await Timelock.deploy(owner, 172800);
+  const pushToken = await PUSH.deploy(owner);
+  await pushToken.delegate(owner);
+
   const governorBravoDelegate = await GovernorBravoDelegate.deploy();
   let governorBravo = await GovernorBravoDelegator.deploy(
-    timelock,
-    comp,
+    governorBravoDelegate.target,
     owner,
-    governorBravoDelegate,
+    timelock,
+    pushToken,
     5760,
     100,
-    1000n * 10n ** 18n
+    500000n * 10n ** 18n
   );
-  await comp.delegate(owner);
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const txData = await timelock.setPendingAdmin.populateTransaction(
-    governorBravo
-  ).data;
+  await governorBravo.connect(owner).changeAdmin(owner2.address);
+
+  governorBravo = GovernorBravoDelegate.attach(
+    await governorBravo.getAddress()
+  );
+// console.log(governorBravo.target);
+  const eta =
+    BigInt(await time.latest()) + 6000n + 172800n;
+
+  const tx = await timelock.setPendingAdmin.populateTransaction(governorBravo);
+  const txData = tx.data;
+
   await propose(
-    governorAlpha,
+    governorBravo,
     [timelock],
     [0n],
     [txData],
     "Transfer admin for bravo"
   );
-  await governorAlpha.castVote(await governorAlpha.votingDelay(), true);
-  await mine(await governorAlpha.votingPeriod());
-  await governorAlpha.queue(1);
-  await time.increase(await timelock.MINIMUM_DELAY());
-  await governorAlpha.execute(1);
-  governorBravo = GovernorBravoDelegate.attach(
-    await governorBravo.getAddress()
-  );
-  await governorBravo._initiate(governorAlpha);
+  await governorBravo.castVote(1, 1);
+  await mine(await governorBravo.votingPeriod());
+  await timelock.queueTransaction(timelock, 0, "", txData, eta);
+  await time.increase(172800n + 300n);
+  await timelock.executeTransaction(timelock, 0, "", txData, eta);
 
-  return { governorBravo };
+  await governorBravo.acceptTimelockOwnership();
+  return { governorBravo, timelock, pushToken };
 };
 
 const getTypedDomain = async function getTypedDomain(address, chainId) {
   return {
-    name: "Compound Governor Bravo",
+    name: "Push Governor Bravo",
     chainId: chainId.toString(),
     verifyingContract: await address.getAddress(),
   };
@@ -208,13 +190,6 @@ const getVoteWithReasonTypes = function getVoteWithReasonTypes() {
   };
 };
 
-const getTypedDomainComp = async function getTypedDomainComp(address, chainId) {
-  return {
-    name: "Compound",
-    chainId: chainId.toString(),
-    verifyingContract: await address.getAddress(),
-  };
-};
 
 const getDelegationTypes = function getDelegationTypes() {
   return {
@@ -239,6 +214,14 @@ const getProposeTypes = function getProposeTypes() {
   };
 };
 
+// const getTypedDomainComp = async function getTypedDomainComp(address, chainId) {
+//   return {
+//     name: "Compound",
+//     chainId: chainId.toString(),
+//     verifyingContract: await address.getAddress(),
+//   };
+// };
+
 let ProposalState;
 (function (ProposalState) {
   ProposalState[(ProposalState["Pending"] = 0)] = "Pending";
@@ -251,18 +234,17 @@ let ProposalState;
   ProposalState[(ProposalState["Executed"] = 7)] = "Executed";
 })(ProposalState || (ProposalState = {}));
 
-module.exports = [
+module.exports = {
   setupGovernorBravo,
-  setupGovernorAlpha,
+  // setupGovernorAlpha,
   propose,
   proposeAndPass,
   proposeAndQueue,
   getDelegationTypes,
   getTypedDomain,
-  getTypedDomainComp,
   getVoteTypes,
   getVoteWithReasonTypes,
   getProposeTypes,
   ProposalState,
   proposeAndExecute,
-];
+};

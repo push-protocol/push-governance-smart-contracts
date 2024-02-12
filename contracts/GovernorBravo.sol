@@ -434,6 +434,15 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         emit NewAdmin(oldAdmin, admin);
         emit NewPendingAdmin(oldPendingAdmin, pendingAdmin);
     }
+    
+    /**
+     * @notice Accepts the admin ownership of the timelock contract.
+     * @dev Allows the GovernorBravo to become to admin of timelock for any operation to be performed via Timelock
+     */
+    function acceptTimelockOwnership() external {
+        require(msg.sender == admin, "GovernorBravo::_setProposalThreshold: admin only");
+        timelock.acceptAdmin();
+    }
 
     function add256(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a + b;
