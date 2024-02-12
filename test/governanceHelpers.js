@@ -119,18 +119,18 @@ const setupGovernorBravo = async function setupGovernorBravo() {
   );
 
   const Timelock = await ethers.getContractFactory("Timelock");
-  const Comp = await ethers.getContractFactory("EPNS");
+  const PUSH = await ethers.getContractFactory("EPNS");
 
   const timelock = await Timelock.deploy(owner, 172800);
-  const comp = await Comp.deploy(owner);
-  await comp.delegate(owner);
+  const pushToken = await PUSH.deploy(owner);
+  await pushToken.delegate(owner);
 
   const governorBravoDelegate = await GovernorBravoDelegate.deploy();
   let governorBravo = await GovernorBravoDelegator.deploy(
     governorBravoDelegate.target,
     owner,
     timelock,
-    comp,
+    pushToken,
     5760,
     100,
     500000n * 10n ** 18n
@@ -161,12 +161,12 @@ const setupGovernorBravo = async function setupGovernorBravo() {
   await timelock.executeTransaction(timelock, 0, "", txData, eta);
 
   await governorBravo.accept();
-  return { governorBravo, timelock, comp };
+  return { governorBravo, timelock, pushToken };
 };
 
 const getTypedDomain = async function getTypedDomain(address, chainId) {
   return {
-    name: "Compound Governor Bravo",
+    name: "Push Governor Bravo",
     chainId: chainId.toString(),
     verifyingContract: await address.getAddress(),
   };
@@ -190,13 +190,6 @@ const getVoteWithReasonTypes = function getVoteWithReasonTypes() {
   };
 };
 
-const getTypedDomainComp = async function getTypedDomainComp(address, chainId) {
-  return {
-    name: "Compound",
-    chainId: chainId.toString(),
-    verifyingContract: await address.getAddress(),
-  };
-};
 
 const getDelegationTypes = function getDelegationTypes() {
   return {
@@ -221,6 +214,14 @@ const getProposeTypes = function getProposeTypes() {
   };
 };
 
+// const getTypedDomainComp = async function getTypedDomainComp(address, chainId) {
+//   return {
+//     name: "Compound",
+//     chainId: chainId.toString(),
+//     verifyingContract: await address.getAddress(),
+//   };
+// };
+
 let ProposalState;
 (function (ProposalState) {
   ProposalState[(ProposalState["Pending"] = 0)] = "Pending";
@@ -241,7 +242,6 @@ module.exports = {
   proposeAndQueue,
   getDelegationTypes,
   getTypedDomain,
-  getTypedDomainComp,
   getVoteTypes,
   getVoteWithReasonTypes,
   getProposeTypes,

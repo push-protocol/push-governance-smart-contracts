@@ -23,7 +23,7 @@ const {
 describe("Governor Bravo", function () {
   async function deployFixtures() {
     const [owner, otherAccount, owner2] = await ethers.getSigners();
-    const { governorBravo, timelock, comp, governorBravoProxy } =
+    const { governorBravo, timelock, pushToken, governorBravoProxy } =
       await setupGovernorBravo();
 
     return {
@@ -32,7 +32,7 @@ describe("Governor Bravo", function () {
       owner2,
       governorBravo,
       timelock,
-      comp,
+      pushToken,
       governorBravoProxy,
     };
   }
@@ -190,7 +190,7 @@ describe("Governor Bravo", function () {
       );
     });
 
-    it("Error: invalid comp", async function () {
+    it("Error: invalid pushToken", async function () {
       const GovernorBravoDelegator = await ethers.getContractFactory(
         "PushBravoProxy"
       );
@@ -210,7 +210,7 @@ describe("Governor Bravo", function () {
           BigInt("500000") * 10n ** 18n
         )
       ).to.be.reverted;
-      //With("GovernorBravo::initialize: invalid comp address");
+      //With("GovernorBravo::initialize: invalid pushToken address");
     });
 
     it("Error: invalid timelock", async function () {
@@ -399,12 +399,12 @@ describe("Governor Bravo", function () {
     });
 
     it("Happy Path: below threshold", async function () {
-      const { governorBravo, comp, otherAccount } = await loadFixture(
+      const { governorBravo, pushToken, otherAccount } = await loadFixture(
         deployFixtures
       );
       const proposalId = await proposeAndPass(governorBravo);
 
-      await comp.delegate(otherAccount);
+      await pushToken.delegate(otherAccount);
       await governorBravo.connect(otherAccount).cancel(proposalId);
     });
 
@@ -528,11 +528,11 @@ describe("Governor Bravo", function () {
     });
 
     it("Defeated: quorum", async function () {
-      const { governorBravo, comp, otherAccount } = await loadFixture(
+      const { governorBravo, pushToken, otherAccount } = await loadFixture(
         deployFixtures
       );
-      await comp.transfer(otherAccount, BigInt("100000"));
-      await comp.connect(otherAccount).delegate(otherAccount);
+      await pushToken.transfer(otherAccount, BigInt("100000"));
+      await pushToken.connect(otherAccount).delegate(otherAccount);
 
       const proposalId = await propose(governorBravo);
       await governorBravo.connect(otherAccount).castVote(proposalId, 1);
@@ -544,14 +544,14 @@ describe("Governor Bravo", function () {
     });
 
     it("Defeated: against", async function () {
-      const { governorBravo, comp, otherAccount } = await loadFixture(
+      const { governorBravo, pushToken, otherAccount } = await loadFixture(
         deployFixtures
       );
-      await comp.transfer(
+      await pushToken.transfer(
         otherAccount, // quorum
         BigInt("400000") * BigInt("10") ** BigInt("18")
       );
-      await comp.connect(otherAccount).delegate(otherAccount);
+      await pushToken.connect(otherAccount).delegate(otherAccount);
 
       const proposalId = await propose(governorBravo);
       await governorBravo.connect(otherAccount).castVote(proposalId, 1);
