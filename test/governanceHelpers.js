@@ -114,6 +114,9 @@ const setupGovernorBravo = async function setupGovernorBravo() {
   const GovernorBravoDelegator = await ethers.getContractFactory(
     "PushBravoProxy"
   );
+  const GovernorBravoProxyAdmin = await ethers.getContractFactory(
+    "PushBravoAdmin"
+  );
   const GovernorBravoDelegate = await ethers.getContractFactory(
     "GovernorBravoDelegate"
   );
@@ -126,8 +129,10 @@ const setupGovernorBravo = async function setupGovernorBravo() {
   await pushToken.delegate(owner);
 
   const governorBravoDelegate = await GovernorBravoDelegate.deploy();
+  const proxyAdmin = await GovernorBravoProxyAdmin.deploy();
   let governorBravo = await GovernorBravoDelegator.deploy(
     governorBravoDelegate.target,
+    proxyAdmin.target,
     owner,
     timelock,
     pushToken,
@@ -135,7 +140,6 @@ const setupGovernorBravo = async function setupGovernorBravo() {
     100,
     500000n * 10n ** 18n
   );
-  await governorBravo.connect(owner).changeAdmin(owner2.address);
 
   governorBravo = GovernorBravoDelegate.attach(
     await governorBravo.getAddress()
@@ -161,7 +165,7 @@ const setupGovernorBravo = async function setupGovernorBravo() {
   await timelock.executeTransaction(timelock, 0, "", txData, eta);
 
   await governorBravo.acceptTimelockOwnership();
-  return { governorBravo, timelock, pushToken };
+  return { governorBravo, timelock, pushToken,proxyAdmin };
 };
 
 const getTypedDomain = async function getTypedDomain(address, chainId) {
