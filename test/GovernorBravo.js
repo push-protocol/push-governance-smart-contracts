@@ -23,7 +23,7 @@ const {
 describe("Governor Bravo", function () {
   async function deployFixtures() {
     const [owner, otherAccount, owner2] = await ethers.getSigners();
-    const { governorBravo, timelock, pushToken, governorBravoProxy } =
+    const { governorBravo, timelock, pushToken, proxyAdmin } =
       await setupGovernorBravo();
 
     return {
@@ -33,7 +33,7 @@ describe("Governor Bravo", function () {
       governorBravo,
       timelock,
       pushToken,
-      governorBravoProxy,
+      proxyAdmin,
     };
   }
 
@@ -45,11 +45,16 @@ describe("Governor Bravo", function () {
       const GovernorBravoDelegate = await ethers.getContractFactory(
         "GovernorBravoDelegate"
       );
+      const GovernorBravoProxyAdmin = await ethers.getContractFactory(
+        "PushBravoAdmin"
+      );
+      const proxyAdmin = await GovernorBravoProxyAdmin.deploy();
       const addresses = (await ethers.getSigners()).slice(3);
       const governorBravoDelegate = await GovernorBravoDelegate.deploy();
 
       await GovernorBravoDelegator.deploy(
         governorBravoDelegate.target,
+        proxyAdmin.target,
         addresses[0],
         addresses[1],
         addresses[2],
@@ -65,11 +70,16 @@ describe("Governor Bravo", function () {
       const GovernorBravoDelegate = await ethers.getContractFactory(
         "GovernorBravoDelegate"
       );
+      const GovernorBravoProxyAdmin = await ethers.getContractFactory(
+        "PushBravoAdmin"
+      );
+      const proxyAdmin = await GovernorBravoProxyAdmin.deploy();
       const addresses = (await ethers.getSigners()).slice(3);
       const governorBravoDelegate = await GovernorBravoDelegate.deploy();
       await expect(
         GovernorBravoDelegator.deploy(
           governorBravoDelegate.target,
+          proxyAdmin.target,
           addresses[0],
           addresses[1],
           addresses[2],
@@ -83,6 +93,7 @@ describe("Governor Bravo", function () {
       await expect(
         GovernorBravoDelegator.deploy(
           governorBravoDelegate.target,
+          proxyAdmin.target,
           addresses[0],
           addresses[1],
           addresses[2],
@@ -101,11 +112,16 @@ describe("Governor Bravo", function () {
       const GovernorBravoDelegate = await ethers.getContractFactory(
         "GovernorBravoDelegate"
       );
+      const GovernorBravoProxyAdmin = await ethers.getContractFactory(
+        "PushBravoAdmin"
+      );
+      const proxyAdmin = await GovernorBravoProxyAdmin.deploy();
       const addresses = (await ethers.getSigners()).slice(3);
       const governorBravoDelegate = await GovernorBravoDelegate.deploy();
       await expect(
         GovernorBravoDelegator.deploy(
           governorBravoDelegate.target,
+          proxyAdmin.target,
           addresses[0],
           addresses[1],
           addresses[2],
@@ -119,6 +135,7 @@ describe("Governor Bravo", function () {
       await expect(
         GovernorBravoDelegator.deploy(
           governorBravoDelegate.target,
+          proxyAdmin.target,
           addresses[0],
           addresses[1],
           addresses[2],
@@ -137,11 +154,16 @@ describe("Governor Bravo", function () {
       const GovernorBravoDelegate = await ethers.getContractFactory(
         "GovernorBravoDelegate"
       );
+      const GovernorBravoProxyAdmin = await ethers.getContractFactory(
+        "PushBravoAdmin"
+      );
+      const proxyAdmin = await GovernorBravoProxyAdmin.deploy();
       const addresses = (await ethers.getSigners()).slice(3);
       const governorBravoDelegate = await GovernorBravoDelegate.deploy();
       await expect(
         GovernorBravoDelegator.deploy(
           governorBravoDelegate.target,
+          proxyAdmin.target,
           addresses[0],
           addresses[1],
           addresses[2],
@@ -157,6 +179,7 @@ describe("Governor Bravo", function () {
       await expect(
         GovernorBravoDelegator.deploy(
           governorBravoDelegate.target,
+          proxyAdmin.target,
           addresses[0],
           addresses[1],
           addresses[2],
@@ -197,11 +220,16 @@ describe("Governor Bravo", function () {
       const GovernorBravoDelegate = await ethers.getContractFactory(
         "GovernorBravoDelegate"
       );
+      const GovernorBravoProxyAdmin = await ethers.getContractFactory(
+        "PushBravoAdmin"
+      );
+      const proxyAdmin = await GovernorBravoProxyAdmin.deploy();
       const addresses = (await ethers.getSigners()).slice(3);
       const governorBravoDelegate = await GovernorBravoDelegate.deploy();
       await expect(
         GovernorBravoDelegator.deploy(
           governorBravoDelegate,
+          proxyAdmin.target,
           addresses[0],
           addresses[2],
           ethers.zeroPadBytes("0x", 20),
@@ -220,11 +248,16 @@ describe("Governor Bravo", function () {
       const GovernorBravoDelegate = await ethers.getContractFactory(
         "GovernorBravoDelegate"
       );
+      const GovernorBravoProxyAdmin = await ethers.getContractFactory(
+        "PushBravoAdmin"
+      );
+      const proxyAdmin = await GovernorBravoProxyAdmin.deploy();
       const addresses = (await ethers.getSigners()).slice(3);
       const governorBravoDelegate = await GovernorBravoDelegate.deploy();
       await expect(
         GovernorBravoDelegator.deploy(
           governorBravoDelegate,
+          proxyAdmin.target,
           addresses[0],
           ethers.zeroPadBytes("0x", 20),
           addresses[2],
@@ -416,7 +449,6 @@ describe("Governor Bravo", function () {
         governorBravo.connect(otherAccount).cancel(proposalId)
       ).to.be.revertedWith("GovernorBravo::cancel: proposer above threshold");
     });
-
   });
 
   describe("Vote", function () {
@@ -774,7 +806,9 @@ describe("Governor Bravo", function () {
     });
 
     it("Invalid address", async function () {
-      const { governorBravo, owner2 } = await loadFixture(deployFixtures);
+      const { governorBravo, owner, proxyAdmin } = await loadFixture(
+        deployFixtures
+      );
       const GovernorBravoDelegator = await ethers.getContractFactory(
         "PushBravoProxy"
       );
@@ -782,25 +816,28 @@ describe("Governor Bravo", function () {
         await governorBravo.getAddress()
       );
       await expect(
-        governorBravoDelegator.connect(owner2).upgradeTo(ethers.ZeroAddress)
+        proxyAdmin
+          .connect(owner)
+          .upgrade(governorBravoDelegator, ethers.ZeroAddress)
       ).to.be.revertedWith(
         "UpgradeableProxy: new implementation is not a contract"
       );
     });
 
     it("Happy path", async function () {
-      const { governorBravo, owner2 } = await loadFixture(deployFixtures);
+      const { governorBravo, owner, proxyAdmin } = await loadFixture(
+        deployFixtures
+      );
       const GovernorBravoDelegator = await ethers.getContractFactory(
         "PushBravoProxy"
       );
       const governorBravoDelegator = GovernorBravoDelegator.attach(
         await governorBravo.getAddress()
       );
-      await governorBravoDelegator
-        .connect(owner2)
-        .upgradeTo(governorBravo.target);
       await expect(
-        governorBravoDelegator.connect(owner2).upgradeTo(governorBravo.target)
+        proxyAdmin
+          .connect(owner)
+          .upgrade(governorBravoDelegator.target, governorBravo.target)
       ).to.be.fulfilled;
     });
   });

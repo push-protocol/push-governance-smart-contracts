@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/proxy/TransparentUpgradeableProxy.sol";
 contract PushBravoProxy is TransparentUpgradeableProxy {
     constructor(
         address _logic,
+        address _proxyAdmin,
         address _admin,
         address _timelock,
         address _push,
@@ -18,7 +19,7 @@ contract PushBravoProxy is TransparentUpgradeableProxy {
         payable
         TransparentUpgradeableProxy(
             _logic,
-            _admin,
+            _proxyAdmin,
             abi.encodeWithSignature(
                 "initialize(address,address,address,uint256,uint256,uint256)",
                 _admin,
