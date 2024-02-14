@@ -4,11 +4,11 @@ async function main() {
   const _signer = await ethers.provider.getSigner();
   const _admin = await _signer.address;
   const _push = "0x37c779a1564DCc0e3914aB130e0e787d93e21804";
-  const _votingPeriod = 50000;
-  const _votingDelay = 30000;
+  const _votingPeriod = 100;
+  const _votingDelay = 1;
   const _proposalThreshold = ethers.parseEther("800000");
 
-  const _delay = 15;
+  const _delay = 0;
 
   console.log("deploying logic");
 
