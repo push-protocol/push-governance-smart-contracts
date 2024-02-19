@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.6.11;
-
+pragma solidity ^0.8.20;
 contract EPNS {
     /// @notice EIP-20 token name for this token
     string public constant name = "Ethereum Push Notification Service";
@@ -694,7 +693,7 @@ contract EPNS {
         return c;
     }
 
-    function getChainId() internal pure returns (uint) {
+    function getChainId() internal view returns (uint) {
         uint256 chainId;
         assembly {
             chainId := chainid()
