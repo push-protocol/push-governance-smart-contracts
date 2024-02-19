@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesQ
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorTimelockControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract MyGovernor is Initializable, GovernorUpgradeable, GovernorSettingsUpgradeable, GovernorCountingSimpleUpgradeable, GovernorVotesUpgradeable, GovernorVotesQuorumFractionUpgradeable, GovernorTimelockControlUpgradeable {
+contract PushGovernor is Initializable, GovernorUpgradeable, GovernorSettingsUpgradeable, GovernorCountingSimpleUpgradeable, GovernorVotesUpgradeable, GovernorVotesQuorumFractionUpgradeable, GovernorTimelockControlUpgradeable {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -18,7 +18,7 @@ contract MyGovernor is Initializable, GovernorUpgradeable, GovernorSettingsUpgra
     function initialize(IVotes _token, TimelockControllerUpgradeable _timelock)
         initializer public
     {
-        __Governor_init("MyGovernor");
+        __Governor_init("PushGovernor");
         __GovernorSettings_init(7200 /* 1 day */, 50400 /* 1 week */, 0);
         __GovernorCountingSimple_init();
         __GovernorVotes_init(_token);
