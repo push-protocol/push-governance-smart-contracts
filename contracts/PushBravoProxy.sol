@@ -3,16 +3,12 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
-contract PushBravoProxy is TransparentUpgradeableProxy {
+contract PushGovernorProxy is TransparentUpgradeableProxy {
     constructor(
         address _logic,
         address _proxyAdmin,
-        address _admin,
-        address _timelock,
         address _push,
-        uint256 _votingPeriod,
-        uint256 _votingDelay,
-        uint256 _proposalThreshold
+        address _timelock
     )
         public
         payable
@@ -20,13 +16,9 @@ contract PushBravoProxy is TransparentUpgradeableProxy {
             _logic,
             _proxyAdmin,
             abi.encodeWithSignature(
-                "initialize(address,address,address,uint256,uint256,uint256)",
-                _admin,
-                _timelock,
+                "initialize(address,address,address,address)",
                 _push,
-                _votingPeriod,
-                _votingDelay,
-                _proposalThreshold
+                _timelock
             )
         )
     {}
