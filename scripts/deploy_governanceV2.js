@@ -33,7 +33,7 @@ async function main() {
   console.log("Upgraded to", logic.target);
   console.log("verifying logic");
 
-  await logic.deploymentTransaction().wait(3);
+  await logic.deploymentTransaction().wait(4);
 
   try {
     await hre.run("verify:verify", {

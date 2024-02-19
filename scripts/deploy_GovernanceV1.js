@@ -8,7 +8,6 @@ async function main() {
   } else {
     args = testNetArgs;
   }
-  console.log(args);
   const _signer = await ethers.provider.getSigner();
   const _admin = await _signer.address;
 
