@@ -1,34 +1,29 @@
-const {
-  proxyAdminMainnet,
-  proxyAdminTestnet,
-  proxyTestnet,
-  proxyMainnet,
-} = require("./utils/constants.js");
+const { mainnetArgs, testNetArgs } = require("./utils/constants.js");
 
 async function main() {
   let proxy, proxyAdmin;
 
   if (ethers.provider._networkName == "mainnet") {
-    proxy = proxyMainnet;
-    proxyAdmin = proxyAdminMainnet;
+    proxy = mainnetArgs.proxy;
+    proxyAdmin = mainnetArgs.proxyAdmin;
   } else {
-    proxy = proxyTestnet;
-    proxyAdmin = proxyAdminTestnet;
+    proxy = testNetArgs.proxy;
+    proxyAdmin = testNetArgs.proxyAdmin;
   }
   const adminFactory = await ethers.getContractFactory("PushBravoAdmin");
-  const admiInstance = adminFactory.attach(proxyAdmin);
+  const adminInstance = adminFactory.attach(proxyAdmin);
 
   console.log(
     "Current implementation:",
-    await admiInstance.getProxyImplementation(proxy)
+    await adminInstance.getProxyImplementation(proxy)
   );
 
-  console.log("deploying logic");
+  console.log("deploying and upgrading logic");
 
   const logic = await ethers.deployContract("GovernorBravoDelegate");
   await logic.waitForDeployment();
 
-  await admiInstance.upgrade(proxy, logic.target);
+  await adminInstance.upgrade(proxy, logic.target);
 
   console.log("Upgraded to", logic.target);
   console.log("verifying logic");

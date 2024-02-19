@@ -1,4 +1,4 @@
-const { mainnetArgs, testNetArgs, _delay } = require("./utils/constants.js");
+const { mainnetArgs, testNetArgs } = require("./utils/constants.js");
 
 async function main() {
   let args;
@@ -19,7 +19,10 @@ async function main() {
 
   console.log("deploying timelock");
 
-  const timelock = await ethers.deployContract("Timelock", [_admin, _delay]);
+  const timelock = await ethers.deployContract("Timelock", [
+    _admin,
+    args._delay,
+  ]);
   await timelock.waitForDeployment();
 
   console.log("timelock deployed to:", timelock.target);
@@ -30,16 +33,15 @@ async function main() {
   console.log("proxyAdmin deployed to:", proxyAdmin.target);
 
   console.log("deploying proxy");
-
   const proxy = await ethers.deployContract("PushBravoProxy", [
     logic.target,
     proxyAdmin.target,
     _admin,
     timelock.target,
-    args[0],
-    args[1],
-    args[2],
-    args[3],
+    args._push,
+    args._votingPeriod,
+    args._votingDelay,
+    args._proposalThreshold,
   ]);
   await proxy.waitForDeployment();
 
@@ -89,10 +91,10 @@ async function main() {
         proxyAdmin.target,
         _admin,
         timelock.target,
-        args[0],
-        args[1],
-        args[2],
-        args[3],
+        args._push,
+        args._votingPeriod,
+        args._votingDelay,
+        args._proposalThreshold,
       ],
       contract: "contracts/PushBravoProxy.sol:PushBravoProxy",
     });
