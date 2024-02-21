@@ -1,4 +1,5 @@
 const { mainnetArgs, testNetArgs } = require("./utils/constants.js");
+const { deploy, verify } = require("./utils/helper.js");
 
 async function main() {
   let args;
@@ -11,29 +12,10 @@ async function main() {
   const _signer = await ethers.provider.getSigner();
   const _admin = await _signer.address;
 
-  console.log("deploying logic");
-
-  const logic = await ethers.deployContract("GovernorBravoDelegate");
-  await logic.waitForDeployment();
-  console.log("logic deployed on", logic.target);
-
-  console.log("deploying timelock");
-
-  const timelock = await ethers.deployContract("Timelock", [
-    _admin,
-    args._delay,
-  ]);
-  await timelock.waitForDeployment();
-
-  console.log("timelock deployed to:", timelock.target);
-
-  console.log("deploying proxy Admin");
-
-  const proxyAdmin = await ethers.deployContract("PushBravoAdmin");
-  console.log("proxyAdmin deployed to:", proxyAdmin.target);
-
-  console.log("deploying proxy");
-  const proxy = await ethers.deployContract("PushBravoProxy", [
+  const logic = await deploy("GovernorBravoDelegate");
+  const timelock = await deploy("Timelock", [_admin, args._delay]);
+  const proxyAdmin = await deploy("PushBravoAdmin");
+  const proxy = await deploy("PushBravoProxy", [
     logic.target,
     proxyAdmin.target,
     _admin,
@@ -43,64 +25,45 @@ async function main() {
     args._votingDelay,
     args._proposalThreshold,
   ]);
-  await proxy.waitForDeployment();
-
-  console.log("proxy deployed to:", proxy.target);
 
   console.log("Verifying All Contracts");
-  await proxy.deploymentTransaction().wait(4);
+  await proxy.deploymentTransaction().wait(5);
 
-  console.log("verifying logic");
+  await verify(
+    logic.target,
+    [],
+    "contracts/GovernorBravo.sol:GovernorBravoDelegate"
+  );
 
-  try {
-    await hre.run("verify:verify", {
-      address: logic.target,
-      constructorArguments: [],
-    });
-  } catch (error) {
-    console.log("Verification failed :", error);
-  }
+  await verify(
+    timelock.target,
+    [_admin, args._delay],
+    "contracts/Timelock.sol:Timelock"
+  );
 
-  console.log("verifying timelock");
+  await verify(
+    proxyAdmin.target,
+    [],
+    "contracts/PushBravoAdmin.sol:PushBravoAdmin"
+  );
 
-  try {
-    await hre.run("verify:verify", {
-      address: timelock.target,
-      constructorArguments: [_admin, _delay],
-    });
-  } catch (error) {
-    console.log("Verification failed :", error);
-  }
-  console.log("verifying proxy Admin");
-  try {
-    await hre.run("verify:verify", {
-      address: proxyAdmin.target,
-      constructorArguments: [],
-      contract: "contracts/PushBravoAdmin.sol:PushBravoAdmin",
-    });
-  } catch (error) {
-    console.log("Verification failed :", error);
-  }
-
-  console.log("verifying proxy");
-  try {
-    await hre.run("verify:verify", {
-      address: proxy.target,
-      constructorArguments: [
-        logic.target,
-        proxyAdmin.target,
-        _admin,
-        timelock.target,
-        args._push,
-        args._votingPeriod,
-        args._votingDelay,
-        args._proposalThreshold,
-      ],
-      contract: "contracts/PushBravoProxy.sol:PushBravoProxy",
-    });
-  } catch (error) {
-    console.log("Verification failed :", error);
-  }
+  await verify(
+    proxy.target,
+    [
+      logic.target,
+      proxyAdmin.target,
+      _admin,
+      timelock.target,
+      args._push,
+      args._votingPeriod,
+      args._votingDelay,
+      args._proposalThreshold,
+    ],
+    "contracts/PushBravoProxy.sol:PushBravoProxy"
+  );
 }
 
-main();
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
