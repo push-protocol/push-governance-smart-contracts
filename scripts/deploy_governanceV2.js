@@ -1,4 +1,5 @@
 const { mainnetArgs, testNetArgs } = require("./utils/constants.js");
+const { deploy, verify } = require("./utils/helper.js");
 
 async function main() {
   let proxy, proxyAdmin;
@@ -20,8 +21,7 @@ async function main() {
 
   console.log("deploying and upgrading logic");
 
-  const logic = await ethers.deployContract("GovernorBravoDelegate");
-  await logic.waitForDeployment();
+  const logic = await deploy("GovernorBravoDelegate");
 
   await adminInstance.upgrade(proxy, logic.target);
 
@@ -30,14 +30,11 @@ async function main() {
 
   await logic.deploymentTransaction().wait(4);
 
-  try {
-    await hre.run("verify:verify", {
-      address: logic.target,
-      constructorArguments: [],
-    });
-  } catch (error) {
-    console.log("Verification failed :", error);
-  }
+  await verify(
+    logic.target,
+    [],
+    "contracts/GovernorBravo.sol:GovernorBravoDelegate"
+  );
 }
 
 main();
