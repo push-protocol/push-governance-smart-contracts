@@ -19,16 +19,12 @@ async function main() {
     await adminInstance.getProxyImplementation(proxy)
   );
 
-  console.log("deploying and upgrading logic");
-
   const logic = await deploy("GovernorBravoDelegate");
 
   await adminInstance.upgrade(proxy, logic.target);
 
   console.log("Upgraded to", logic.target);
-  console.log("verifying logic");
-
-  await logic.deploymentTransaction().wait(4);
+  await logic.deploymentTransaction().wait(5);
 
   await verify(
     logic.target,
