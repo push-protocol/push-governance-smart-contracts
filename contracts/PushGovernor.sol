@@ -15,11 +15,11 @@ contract PushGovernor is Initializable, GovernorUpgradeable, GovernorSettingsUpg
         _disableInitializers();
     }
 
-    function initialize(IVotes _token, TimelockControllerUpgradeable _timelock)
+    function initialize(IVotes _token, TimelockControllerUpgradeable _timelock, uint48 _initialVotingDelay, uint32 _initialVotingPeriod, uint256 _initialProposalThreshold)
         initializer public
     {
         __Governor_init("PushGovernor");
-        __GovernorSettings_init(14400 /* 2 day */, 50400 /* 1 week */, 500000e18);
+        __GovernorSettings_init(_initialVotingDelay, _initialVotingPeriod, _initialProposalThreshold);
         __GovernorCountingSimple_init();
         __GovernorStorage_init();
         __GovernorVotes_init(_token);

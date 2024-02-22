@@ -8,15 +8,21 @@ contract PushGovernorProxy is TransparentUpgradeableProxy {
         address _logic,
         address _proxyAdmin,
         address _push,
-        address _timelock
+        address _timelock,
+        uint48 _initialVotingDelay, 
+        uint32 _initialVotingPeriod, 
+        uint256 _initialProposalThreshold
     )
             TransparentUpgradeableProxy(
             _logic,
             _proxyAdmin,
             abi.encodeWithSignature(
-                "initialize(address,address,address,address)",
+                "initialize(address,address,address,address,uint48,uint32,uint256)",
                 _push,
-                _timelock
+                _timelock,
+                _initialVotingDelay,
+                _initialVotingPeriod,
+                _initialProposalThreshold
             )
         )
     {}
