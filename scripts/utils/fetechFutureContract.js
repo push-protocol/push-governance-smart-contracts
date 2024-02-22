@@ -2,9 +2,9 @@ const { ethers } = require("ethers");
 
 const fetechFutureContract = async (deployer, actionsAfter) => {
   const deployerAddress = await deployer.getAddress();
-  const adminAddressTransactionCount = await deployer.getTransactionCount();
+  const adminAddressTransactionCount = await deployer.getNonce();
 
-  const expectedContractAddress = ethers.utils.getCreateAddress({
+  const expectedContractAddress = ethers.getCreateAddress({
     from: deployerAddress,
     nonce: adminAddressTransactionCount + actionsAfter,
   });
