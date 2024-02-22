@@ -2,6 +2,7 @@ require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-ethers");
 require("dotenv").config();
 require("@nomicfoundation/hardhat-chai-matchers");
+require('@openzeppelin/hardhat-upgrades');
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -19,7 +20,7 @@ module.exports = {
       allowUnlimitedContractSize: true,
     },
     localhost: {
-      url: "http://localhost:8545",
+      url: "http://127.0.0.1:8545/",
       /*
         notice no mnemonic here? it will just use account 0 of the buidler node to deploy
         (you can put in a mnemonic here to set the deployer locally)
