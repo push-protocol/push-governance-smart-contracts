@@ -1,4 +1,4 @@
-const prod-config =
+const prodConfig =
 {
     // Push Token On ETH-MAINNET
     token: {
@@ -19,7 +19,7 @@ const prod-config =
     // Quorum numerator to denominator of 100
     quorumNumerator: 4,
     // Threshold to be able to propose
-    proposalThreshold: ethers.parseEther("800000"), , // Set a non-zero value to prevent proposal spam.
+    proposalThreshold: ethers.parseEther("800000"), // Set a non-zero value to prevent proposal spam.
     // Proxy Address
     proxyAddress: "",
     //Proxy Admin Address
@@ -32,7 +32,7 @@ const prod-config =
     clockMode: false,
   };
 
-  const staging-config =
+  const stagingConfig =
 {
     // Push Token On ETH-MAINNET
     token: {
@@ -68,6 +68,6 @@ const prod-config =
   
 
 module.exports = {
-    prod-config,
-    staging-config,
+    prodConfig,
+    stagingConfig,
   };
