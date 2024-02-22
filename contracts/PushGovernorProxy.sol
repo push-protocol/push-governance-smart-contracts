@@ -10,9 +10,7 @@ contract PushGovernorProxy is TransparentUpgradeableProxy {
         address _push,
         address _timelock
     )
-        public
-        payable
-        TransparentUpgradeableProxy(
+            TransparentUpgradeableProxy(
             _logic,
             _proxyAdmin,
             abi.encodeWithSignature(
