@@ -27,12 +27,15 @@ async function main() {
 	console.log("Governance contract address:\x1B[33m", governance_address, "\x1B[37m")
 	console.log("Timelock contract address:\x1B[33m", timelock_address, "\x1B[37m\n")
 
-	// Deploy - Veify - Store : TimelockController for Push Dao
-	await deployTimelock(admin_address, timelock_address);
+	// Deploy - Verify - Store : TimelockController for Push Dao
+	//await deployPushTimelock(admin_address, timelock_address);
+
+	// Deploy - Verify - Store : PushGovernor Contracts for Push Dao
+	await deployPushGovernor(timelock_address);
 }
 
 // Timelock Deployer Function
-async function deployTimelock(admin_address, timelock_address){
+async function deployPushTimelock(admin_address, timelock_address){
  	// governor and timelock as proposers and executors to guarantee that the DAO will be able to propose and execute
 
 	const proposers = [admin_address, timelock_address];
@@ -60,13 +63,12 @@ async function deployTimelock(admin_address, timelock_address){
 	console.log("\n TimelockController deployed to:", timelockControllerAddress);
 
 	// Write Arguments to a specific File
-	const argumentsFolderPath = 'arguments';
-	const argumentsFileName = `arguments_${timelockControllerAddress}.js`;
-	const argumentsFilePath = path.join(argumentsFolderPath, argumentsFileName);
+	const argumentsFileName = `arguments_timelock_${timelockControllerAddress}.js`;
+	const argumentsFilePath = path.join('arguments', argumentsFileName);
 
 	// Ensure the arguments folder exists
-	if (!fs.existsSync(argumentsFolderPath)) {
-		fs.mkdirSync(argumentsFolderPath, { recursive: true });
+	if (!fs.existsSync('arguments')) {
+		fs.mkdirSync('arguments', { recursive: true });
 	}
 
 	fs.appendFileSync(
@@ -84,20 +86,19 @@ async function deployTimelock(admin_address, timelock_address){
 	const verify_str_timelock = `npx hardhat verify ` +
 	`--network ${hre.network.name} ` +
 	`--contract "contracts/TimelockController.sol:TimelockController" ` +
-	`--constructor-args arguments/arguments_${timelockControllerAddress}.js ` +
+	`--constructor-args arguments/arguments_timelock_${timelockControllerAddress}.js ` +
 	`${timelockControllerAddress}\n`;
 	console.log("\n" + verify_str_timelock);
 	
 	const timelockBlock = await hre.ethers.provider.getBlock("latest");
 
 	// For the contracts output file
-	const deploymentDataFolderPath = 'deploymentData';
 	const deploymentDataFileName = 'contracts.out';
-	const deploymentDataFilePath = path.join(deploymentDataFolderPath, deploymentDataFileName);
+	const deploymentDataFilePath = path.join('deploymentData', deploymentDataFileName);
 
 	// Ensure the deploymentData folder exists
-	if (!fs.existsSync(deploymentDataFolderPath)) {
-		fs.mkdirSync(deploymentDataFolderPath, { recursive: true });
+	if (!fs.existsSync('deploymentData')) {
+		fs.mkdirSync('deploymentData', { recursive: true });
 	}
 
 	// Write to the deploymentData file
@@ -107,6 +108,101 @@ async function deployTimelock(admin_address, timelock_address){
 		` - ${hre.network.name} - block number: ${timelockBlock?.number}\n${verify_str_timelock}\n\n`
 	);
 	//------------------------- TIMELOCK CONTRACTS DEPLOYED ---------------------------------------
+}
+
+// Timelock Deployer Function
+async function deployPushGovernor(timelock_address){
+	// GOVERNOR CONTRACT
+		// INFO LOGS
+		console.log("GOVERNOR ARGS");
+		console.log("name:\x1B[36m", prodConfig.governor.name, "\x1B[37m");
+		console.log("Token contract addresses:\x1B[33m", prodConfig.token.pushToken, "\x1B[37m")
+		console.log("Timelock contract address:\x1B[33m", timelock_address, "\x1B[37m")
+		console.log("voting delay:\x1B[36m", prodConfig.governor.votingDelay, "\x1B[37m");
+		console.log("voting period:\x1B[36m", prodConfig.governor.votingPeriod, "\x1B[37m");
+		console.log("proposal threshold period:\x1B[36m", prodConfig.governor.proposalThreshold, "\x1B[37m");
+		console.log("quorum numerator:\x1B[36m", prodConfig.governor.quorumNumerator, "\x1B[37m");
+		console.log("vote extension:\x1B[36m", prodConfig.governor.voteExtension, "\x1B[37m\n");
+
+		// Arguments Required
+		/*  
+			IVotes _token,
+			TimelockController _timelock,
+			uint48 _initialVotingDelay,
+			uint32 _initialVotingPeriod,
+			uint256 _initialProposalThreshold,
+		*/
+
+		const governorArgs = [
+			prodConfig.token.pushToken, 
+			timelock_address, 
+			prodConfig.governor.votingDelay, 
+			prodConfig.governor.votingPeriod, 
+			prodConfig.governor.proposalThreshold
+		]
+		const pushGovernor = await ethers.getContractFactory("PushGovernor");
+
+		// Deploy the implementation contract via the OpenZeppelin upgrades plugin
+		console.log("Deploying PushGovernor implementation...");
+		const governorContract = await upgrades.deployProxy(
+			pushGovernor,
+			governorArgs,
+			{ initializer: 'initialize' }
+		);
+
+		await governorContract.waitForDeployment();
+		const governorContractAddress = await governorContract.getAddress();
+		console.log("\n Push Governor deployed to:", governorContractAddress);
+		
+		// Write Arguments to a specific File
+		const argumentsFileName = `arguments_governor_${governorContractAddress}.js`;
+		const argumentsFilePath = path.join('arguments', argumentsFileName);
+
+		// Ensure the arguments folder exists
+		if (!fs.existsSync('arguments')) {
+			fs.mkdirSync('arguments', { recursive: true });
+		}
+
+		fs.appendFileSync(
+			argumentsFilePath,
+			`module.exports = [` +
+			`${prodConfig.token.pushToken},` +
+			`${timelock_address},` +
+			`${prodConfig.governor.votingDelay},` +
+			`${prodConfig.governor.votingDelay},` +
+			`"${prodConfig.governor.proposalThreshold}"` +
+			`];`
+		);
+		
+		const govBlock = await hre.ethers.provider.getBlock("latest");
+
+		
+		// VERIFICATION - verify cli command - Use this to RUN verification command
+		const verify_str_governor = `npx hardhat verify ` +
+		`--network ${hre.network.name} ` +
+		`--contract "contracts/PushGovernor.sol:PushGovernor" ` +
+		`--constructor-args arguments/arguments_governor_${governorContractAddress}.js ` +
+		`${governorContractAddress}\n`;
+		console.log("\n" + verify_str_governor);
+
+
+		// For the contracts output file
+		const deploymentDataFileName = 'contracts.out';
+		const deploymentDataFilePath = path.join('deploymentData', deploymentDataFileName);
+
+		// Ensure the deploymentData folder exists
+		if (!fs.existsSync('deploymentData')) {
+			fs.mkdirSync('deploymentData', { recursive: true });
+		}
+
+		// Write to the deploymentData file
+		fs.appendFileSync(
+			deploymentDataFilePath,
+			`${new Date()}\PushGovernor contract deployed at: ${await governorContractAddress}` +
+			` - ${hre.network.name} - block number: ${govBlock?.number}\n${verify_str_governor}\n\n`
+		);
+
+   //------------------------- Push Governor CONTRACTS DEPLOYED ---------------------------------------
 }
 
 main()

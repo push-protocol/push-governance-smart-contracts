@@ -2,7 +2,7 @@ const prodConfig =
 {
     // Push Token On ETH-MAINNET
     token: {
-        _pushToken: "0xf418588522d5dd018b425E472991E52EBBeEEEEE", // ETH-Mainnet PUSH Token Address
+        pushToken: "0xf418588522d5dd018b425E472991E52EBBeEEEEE", // ETH-Mainnet PUSH Token Address
     },
 
     // Timelock
@@ -36,7 +36,7 @@ const prodConfig =
 {
     // Push Token On ETH-MAINNET
     token: {
-        _pushToken: "0x37c779a1564DCc0e3914aB130e0e787d93e21804", // ETH-Sepolia PUSH Token Address
+        pushToken: "0x37c779a1564DCc0e3914aB130e0e787d93e21804", // ETH-Sepolia PUSH Token Address
     },
 
     // Timelock
