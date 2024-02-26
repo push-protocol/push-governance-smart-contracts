@@ -21,8 +21,8 @@ async function main() {
 	);
 
 	// // Load values for constructor from a ts file deploy.config.ts
-	const governance_address = await fetechFutureContract(deployerSigner, 1);
 	const timelock_address = await fetechFutureContract(deployerSigner, 0);
+	const governance_address = await fetechFutureContract(deployerSigner, 1);
 	const admin_address = governance_address;
 
 	const minter = deployer
@@ -40,6 +40,7 @@ async function main() {
 // Timelock Deployer Function
 async function deployPushTimelock(admin_address, timelock_address){
  	// governor and timelock as proposers and executors to guarantee that the DAO will be able to propose and execute
+	console.log("\n Starting Push Timelock Contracts Deployment........... \n");
 
 	const proposers = [admin_address, timelock_address];
 	const executors = [admin_address, timelock_address];
@@ -54,7 +55,6 @@ async function deployPushTimelock(admin_address, timelock_address){
 	const pushTimelockController = await ethers.getContractFactory("PushTimelockController");
 
 	// Deploy the implementation contract via the OpenZeppelin upgrades plugin
-	console.log("Deploying TimelockController implementation...");
 	const timelockController = await upgrades.deployProxy(
 		pushTimelockController,
 	  	[ config.timelock.minDelay, proposers, executors, timelock_address ],
@@ -86,6 +86,7 @@ async function deployPushTimelock(admin_address, timelock_address){
 
 
 	// VERIFICATION - verify cli command - Use this to RUN verification command
+	console.log("\n Contract Deployed. Copy the command below to Verify Deployed Contract 👇.....")
 	const verify_str_timelock = `npx hardhat verify ` +
 	`--network ${hre.network.name} ` +
 	`--contract "contracts/TimelockController.sol:TimelockController" ` +
@@ -116,6 +117,7 @@ async function deployPushTimelock(admin_address, timelock_address){
 
 // Timelock Deployer Function
 async function deployPushGovernor(timelock_address){
+	console.log("\n Starting Push Governor Contracts Deployment........... \n");
 	// GOVERNOR CONTRACT
 		// INFO LOGS
 		console.log("GOVERNOR ARGS");
@@ -182,6 +184,7 @@ async function deployPushGovernor(timelock_address){
 
 		
 		// VERIFICATION - verify cli command - Use this to RUN verification command
+		console.log("\n Contract Deployed. Copy the command below to Verify Deployed Contract 👇.....")
 		const verify_str_governor = `npx hardhat verify ` +
 		`--network ${hre.network.name} ` +
 		`--contract "contracts/PushGovernor.sol:PushGovernor" ` +
