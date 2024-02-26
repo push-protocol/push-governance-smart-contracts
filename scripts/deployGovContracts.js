@@ -5,6 +5,9 @@ const { ethers, upgrades } = require("hardhat");
 const { fetechFutureContract } = require("./utils/fetechFutureContract");
 
 const { prodConfig, stagingConfig } = require("./utils/gov-config");
+	
+// Select the config for Deployment Network: 
+	const config = stagingConfig;
 
 async function main() {
     console.log("\x1B[37mDeploying Push Governor Contracts contracts");
@@ -28,7 +31,7 @@ async function main() {
 	console.log("Timelock contract address:\x1B[33m", timelock_address, "\x1B[37m\n")
 
 	// Deploy - Verify - Store : TimelockController for Push Dao
-	//await deployPushTimelock(admin_address, timelock_address);
+	await deployPushTimelock(admin_address, timelock_address);
 
 	// Deploy - Verify - Store : PushGovernor Contracts for Push Dao
 	await deployPushGovernor(timelock_address);
@@ -43,7 +46,7 @@ async function deployPushTimelock(admin_address, timelock_address){
 
 	// INFO LOGS
 	console.log("TIMELOCK ARGS");
-	console.log("timelock min delay:\x1B[36m", prodConfig.timelock.minDelay, "\x1B[37m");
+	console.log("timelock min delay:\x1B[36m", config.timelock.minDelay, "\x1B[37m");
 	console.log("executors:\x1B[33m", JSON.stringify(executors), "\x1B[37m");
 	console.log("proposers:\x1B[33m", JSON.stringify(proposers), "\x1B[37m");
 	console.log("admin:\x1B[33m", timelock_address, "\x1B[37m\n");
@@ -54,7 +57,7 @@ async function deployPushTimelock(admin_address, timelock_address){
 	console.log("Deploying TimelockController implementation...");
 	const timelockController = await upgrades.deployProxy(
 		pushTimelockController,
-	  	[ prodConfig.timelock.minDelay, proposers, executors, timelock_address ],
+	  	[ config.timelock.minDelay, proposers, executors, timelock_address ],
 		{ initializer: 'initialize' }
 	);
 
@@ -74,7 +77,7 @@ async function deployPushTimelock(admin_address, timelock_address){
 	fs.appendFileSync(
 		argumentsFilePath,
 		`module.exports = [` +
-		`${prodConfig.timelock.minDelay},` +
+		`${config.timelock.minDelay},` +
 		`${JSON.stringify(proposers)},` +
 		`${JSON.stringify(executors)},` +
 		`"${timelock_address}"` +
@@ -107,7 +110,8 @@ async function deployPushTimelock(admin_address, timelock_address){
 		`${new Date()}\nTimelock contract deployed at: ${await timelockControllerAddress}` +
 		` - ${hre.network.name} - block number: ${timelockBlock?.number}\n${verify_str_timelock}\n\n`
 	);
-	//------------------------- TIMELOCK CONTRACTS DEPLOYED ---------------------------------------
+
+	console.log("\n ----------- TIMELOCK Contracts Deployed ----------- \n");
 }
 
 // Timelock Deployer Function
@@ -115,14 +119,14 @@ async function deployPushGovernor(timelock_address){
 	// GOVERNOR CONTRACT
 		// INFO LOGS
 		console.log("GOVERNOR ARGS");
-		console.log("name:\x1B[36m", prodConfig.governor.name, "\x1B[37m");
-		console.log("Token contract addresses:\x1B[33m", prodConfig.token.pushToken, "\x1B[37m")
+		console.log("name:\x1B[36m", config.governor.name, "\x1B[37m");
+		console.log("Token contract addresses:\x1B[33m", config.token.pushToken, "\x1B[37m")
 		console.log("Timelock contract address:\x1B[33m", timelock_address, "\x1B[37m")
-		console.log("voting delay:\x1B[36m", prodConfig.governor.votingDelay, "\x1B[37m");
-		console.log("voting period:\x1B[36m", prodConfig.governor.votingPeriod, "\x1B[37m");
-		console.log("proposal threshold period:\x1B[36m", prodConfig.governor.proposalThreshold, "\x1B[37m");
-		console.log("quorum numerator:\x1B[36m", prodConfig.governor.quorumNumerator, "\x1B[37m");
-		console.log("vote extension:\x1B[36m", prodConfig.governor.voteExtension, "\x1B[37m\n");
+		console.log("voting delay:\x1B[36m", config.governor.votingDelay, "\x1B[37m");
+		console.log("voting period:\x1B[36m", config.governor.votingPeriod, "\x1B[37m");
+		console.log("proposal threshold period:\x1B[36m", config.governor.proposalThreshold, "\x1B[37m");
+		console.log("quorum numerator:\x1B[36m", config.governor.quorumNumerator, "\x1B[37m");
+		console.log("vote extension:\x1B[36m", config.governor.voteExtension, "\x1B[37m\n");
 
 		// Arguments Required
 		/*  
@@ -134,11 +138,11 @@ async function deployPushGovernor(timelock_address){
 		*/
 
 		const governorArgs = [
-			prodConfig.token.pushToken, 
+			config.token.pushToken, 
 			timelock_address, 
-			prodConfig.governor.votingDelay, 
-			prodConfig.governor.votingPeriod, 
-			prodConfig.governor.proposalThreshold
+			config.governor.votingDelay, 
+			config.governor.votingPeriod, 
+			config.governor.proposalThreshold
 		]
 		const pushGovernor = await ethers.getContractFactory("PushGovernor");
 
@@ -166,11 +170,11 @@ async function deployPushGovernor(timelock_address){
 		fs.appendFileSync(
 			argumentsFilePath,
 			`module.exports = [` +
-			`${prodConfig.token.pushToken},` +
+			`${config.token.pushToken},` +
 			`${timelock_address},` +
-			`${prodConfig.governor.votingDelay},` +
-			`${prodConfig.governor.votingDelay},` +
-			`"${prodConfig.governor.proposalThreshold}"` +
+			`${config.governor.votingDelay},` +
+			`${config.governor.votingDelay},` +
+			`"${config.governor.proposalThreshold}"` +
 			`];`
 		);
 		
@@ -202,8 +206,8 @@ async function deployPushGovernor(timelock_address){
 			` - ${hre.network.name} - block number: ${govBlock?.number}\n${verify_str_governor}\n\n`
 		);
 
-   //------------------------- Push Governor CONTRACTS DEPLOYED ---------------------------------------
-}
+		console.log("\n ----------- PUSH Governor Contracts Deployed ----------- \n");
+	}
 
 main()
   .then(() => process.exit(0))
