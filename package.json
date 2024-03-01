@@ -9,7 +9,8 @@
     "postcompile": "pnpm typechain",
     "deploy:contracts": "hardhat deploy  --reset",
     "deployc": "pnpm deploy:contracts",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "postinstall": "patch-package"
   },
   "files": [
     "contracts"
