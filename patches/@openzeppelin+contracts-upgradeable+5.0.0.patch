@@ -1,12 +1,12 @@
 diff --git a/node_modules/@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol b/node_modules/@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol
-index 8dd97fd..a0db707 100644
+index 8dd97fd..07c1240 100644
 --- a/node_modules/@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol
 +++ b/node_modules/@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol
 @@ -72,12 +72,15 @@ abstract contract GovernorVotesUpgradeable is Initializable, GovernorUpgradeable
  
      /**
       * Read the voting weight from the token's built in snapshot mechanism (see {Governor-_getVotes}).
-+     * Modification: (see {Governor-IVotes}).
++     * Modification: changed getPastVotes() to getPriorVotes()
 +     * As per OZ Governance contract 5.0.0, this function was supposed to call getPastVotes() function.
 +     * However, sicne PUSH Token is a COMP-like token, which supports getPriorVotes() function (instead of getPastVotes()), the function below has been modified accordingly.
       */
