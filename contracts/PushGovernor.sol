@@ -27,7 +27,7 @@ contract PushGovernor is Initializable, GovernorUpgradeable, GovernorSettingsUpg
     }
 
     function quorum(uint256 blockNumber) public pure override returns (uint256) {
-        return 40000000e18;
+        return 4e18;
     }
 
     // The following functions are overrides required by Solidity.
