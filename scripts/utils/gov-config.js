@@ -4,6 +4,7 @@ const prodConfig =
     token: {
         pushToken: "0xf418588522d5dd018b425E472991E52EBBeEEEEE", // ETH-Mainnet PUSH Token Address
     },
+    // Block Height of PUSH Token-Mainnet : 12222104
 
     // Timelock
     timelock: {
@@ -37,7 +38,8 @@ const prodConfig =
     // Push Token On ETH-MAINNET
     token: {
         pushToken: "0x37c779a1564DCc0e3914aB130e0e787d93e21804", // ETH-Sepolia PUSH Token Address
-    },
+    }, 
+    // Block Height of PUSH Token-Staging : 3670788
 
     // Timelock
     timelock: {
