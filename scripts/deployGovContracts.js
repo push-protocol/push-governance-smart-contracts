@@ -7,9 +7,15 @@ const { fetechFutureContract } = require("./utils/fetechFutureContract");
 const { prodConfig, stagingConfig } = require("./utils/gov-config");
 	
 // Select the config for Deployment Network: 
-	const config = stagingConfig;
+let config;
 
 async function main() {
+	if (ethers.provider._networkName == "mainnet") {
+		config = prodConfig;
+	  } else {
+		config = stagingConfig;
+	  }
+console.log(config);
     console.log("\x1B[37mDeploying Push Governor Contracts contracts");
 
     const [deployerSigner] = await hre.ethers.getSigners();
@@ -20,7 +26,7 @@ async function main() {
 		`\nsigner:\x1B[33m${deployer}\x1B[37m\n`
 	);
 
-	// // Load values for constructor from a ts file deploy.config.ts
+    // Load values for constructor from a ts file deploy.config.ts
 	const timelock_address = await fetechFutureContract(deployerSigner, 1);
 	const governance_address = await fetechFutureContract(deployerSigner, 3);
 	const admin_address = governance_address;
