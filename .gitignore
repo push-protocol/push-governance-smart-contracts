@@ -23,3 +23,7 @@ typechain-types
 cache
 artifacts
 
+# Deployment and Arguments File
+arguments/
+deploymentData/
+.openzeppelin

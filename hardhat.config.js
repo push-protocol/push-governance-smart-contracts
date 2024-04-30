@@ -2,15 +2,16 @@ require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-ethers");
 require("dotenv").config();
 require("@nomicfoundation/hardhat-chai-matchers");
+require('@openzeppelin/hardhat-upgrades');
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
-    version: "0.6.11",
+    version: "0.8.20",
     settings: {
       optimizer: {
         enabled: true,
-        runs: 99999,
+        runs: 200,
       },
     },
   },
@@ -19,7 +20,7 @@ module.exports = {
       allowUnlimitedContractSize: true,
     },
     localhost: {
-      url: "http://localhost:8545",
+      url: "http://127.0.0.1:8545/",
       /*
         notice no mnemonic here? it will just use account 0 of the buidler node to deploy
         (you can put in a mnemonic here to set the deployer locally)
@@ -35,8 +36,8 @@ module.exports = {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`, // <---- YOUR INFURA ID! (or it won't work)
       accounts: [process.env.PRIVATE],
     },
-    polygonMumbai: {
-      url: `https://rpc-mumbai.maticvigil.com/`, // <---- YOUR INFURA ID! (or it won't work)
+    polygonAmoy: {
+      url: `https://rpc-amoy.polygon.technology/`, // <---- YOUR INFURA ID! (or it won't work)
       accounts: [process.env.PRIVATE],
     },
   },
@@ -45,7 +46,17 @@ module.exports = {
     apiKey:{
       sepolia: process.env.ETHERSCAN_API,
       mainnet: process.env.ETHERSCAN_API,
-      polygonMumbai: process.env.POLYGONSCAN_API,
-    }
+      polygonAmoy: "OKLINK",
+    },
+    customChains:[
+      {
+        network: "polygonAmoy",
+        chainId: 80002,
+        urls: {
+          apiURL: "https://www.oklink.com/api/explorer/v1/contract/verify/async/api/polygon_amoy",
+          browserURL: "https://www.oklink.com/amoy"
+        }
+      },
+    ]
   },
 };

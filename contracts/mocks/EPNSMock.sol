@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.20;
-contract EPNS {
+contract EPNSMock {
     /// @notice EIP-20 token name for this token
     string public constant name = "Ethereum Push Notification Service";
 
@@ -106,7 +106,11 @@ contract EPNS {
         holderWeight[account] = block.number;
         born = block.number;
     }
-
+    
+    function mint(uint96 _amountToMint) external{
+        balances[msg.sender] = _amountToMint;
+        totalSupply += _amountToMint;
+    }
     /**
      * @notice Get the number of tokens `spender` is approved to spend on behalf of `account`
      * @param account The address of the account holding the funds

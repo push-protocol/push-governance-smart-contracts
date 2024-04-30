@@ -1,0 +1,15 @@
+diff --git a/node_modules/@openzeppelin/contracts/governance/utils/IVotes.sol b/node_modules/@openzeppelin/contracts/governance/utils/IVotes.sol
+index 7ba012e..81f7578 100644
+--- a/node_modules/@openzeppelin/contracts/governance/utils/IVotes.sol
++++ b/node_modules/@openzeppelin/contracts/governance/utils/IVotes.sol
+@@ -29,8 +29,9 @@ interface IVotes {
+     /**
+      * @dev Returns the amount of votes that `account` had at a specific moment in the past. If the `clock()` is
+      * configured to use block numbers, this will return the value at the end of the corresponding block.
++     * Modification: Changed getPastVotes() to getPriorVotes(). (see {GovernorVotesUpgradeable-_getVotes}).
+      */
+-    function getPastVotes(address account, uint256 timepoint) external view returns (uint256);
++    function getPriorVotes(address account, uint256 timepoint) external view returns (uint256);
+ 
+     /**
+      * @dev Returns the total supply of votes available at a specific moment in the past. If the `clock()` is
