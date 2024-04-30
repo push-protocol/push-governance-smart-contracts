@@ -36,8 +36,8 @@ module.exports = {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_PROJECT_ID}`, // <---- YOUR INFURA ID! (or it won't work)
       accounts: [process.env.PRIVATE],
     },
-    polygonMumbai: {
-      url: `https://rpc-mumbai.maticvigil.com/`, // <---- YOUR INFURA ID! (or it won't work)
+    polygonAmoy: {
+      url: `https://rpc-amoy.polygon.technology/`, // <---- YOUR INFURA ID! (or it won't work)
       accounts: [process.env.PRIVATE],
     },
   },
@@ -46,7 +46,17 @@ module.exports = {
     apiKey:{
       sepolia: process.env.ETHERSCAN_API,
       mainnet: process.env.ETHERSCAN_API,
-      polygonMumbai: process.env.POLYGONSCAN_API,
-    }
+      polygonAmoy: "OKLINK",
+    },
+    customChains:[
+      {
+        network: "polygonAmoy",
+        chainId: 80002,
+        urls: {
+          apiURL: "https://www.oklink.com/api/explorer/v1/contract/verify/async/api/polygon_amoy",
+          browserURL: "https://www.oklink.com/amoy"
+        }
+      },
+    ]
   },
 };

@@ -7,9 +7,15 @@ const { fetechFutureContract } = require("./utils/fetechFutureContract");
 const { prodConfig, stagingConfig } = require("./utils/gov-config");
 	
 // Select the config for Deployment Network: 
-	const config = stagingConfig;
+let config;
 
 async function main() {
+	if (ethers.provider._networkName == "mainnet") {
+		config = prodConfig;
+	  } else {
+		config = stagingConfig;
+	  }
+console.log(config);
     console.log("\x1B[37mDeploying Push Governor Contracts contracts");
 
     const [deployerSigner] = await hre.ethers.getSigners();
@@ -20,9 +26,9 @@ async function main() {
 		`\nsigner:\x1B[33m${deployer}\x1B[37m\n`
 	);
 
-	// // Load values for constructor from a ts file deploy.config.ts
-	const timelock_address = await fetechFutureContract(deployerSigner, 0);
-	const governance_address = await fetechFutureContract(deployerSigner, 1);
+    // Load values for constructor from a ts file deploy.config.ts
+	const timelock_address = await fetechFutureContract(deployerSigner, 1);
+	const governance_address = await fetechFutureContract(deployerSigner, 3);
 	const admin_address = governance_address;
 
 	const minter = deployer
@@ -89,8 +95,7 @@ async function deployPushTimelock(admin_address, timelock_address){
 	console.log("\n Contract Deployed. Copy the command below to Verify Deployed Contract 👇.....")
 	const verify_str_timelock = `npx hardhat verify ` +
 	`--network ${hre.network.name} ` +
-	`--contract "contracts/TimelockController.sol:TimelockController" ` +
-	`--constructor-args arguments/arguments_timelock_${timelockControllerAddress}.js ` +
+	`--contract "contracts/PushTimelockController.sol:PushTimelockController" ` +
 	`${timelockControllerAddress}\n`;
 	console.log("\n" + verify_str_timelock);
 	
@@ -188,8 +193,7 @@ async function deployPushGovernor(timelock_address){
 		const verify_str_governor = `npx hardhat verify ` +
 		`--network ${hre.network.name} ` +
 		`--contract "contracts/PushGovernor.sol:PushGovernor" ` +
-		`--constructor-args arguments/arguments_governor_${governorContractAddress}.js ` +
-		`${governorContractAddress}\n`;
+Z		`${governorContractAddress}\n`;
 		console.log("\n" + verify_str_governor);
 
 
