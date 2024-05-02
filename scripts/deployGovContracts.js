@@ -193,7 +193,7 @@ async function deployPushGovernor(timelock_address){
 		const verify_str_governor = `npx hardhat verify ` +
 		`--network ${hre.network.name} ` +
 		`--contract "contracts/PushGovernor.sol:PushGovernor" ` +
-Z		`${governorContractAddress}\n`;
+		`${governorContractAddress}\n`;
 		console.log("\n" + verify_str_governor);
 
 
